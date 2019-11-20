@@ -39,3 +39,4 @@ function checker() {
 
 checker ansible
 checker python
+checker git

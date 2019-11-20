@@ -5,10 +5,10 @@
             "cpu": "2",
             "disk": "20",
             "mac": [
-                "0c:c4:7a:eb:87:47"
+                "0c:c4:7a:8e:b5:8f"
             ],
             "memory": "1024",
-            "pm_addr": "mgmt-f19-h15-000-r620.rdu2.scalelab.redhat.com",
+            "pm_addr": "mgmt-f03-h29-000-r620.rdu2.scalelab.redhat.com",
             "pm_password": "499317",
             "pm_type": "pxe_ipmitool",
             "pm_user": "quads"
@@ -18,10 +18,10 @@
             "cpu": "2",
             "disk": "20",
             "mac": [
-                "0c:c4:7a:eb:90:6f"
+                "0c:c4:7a:eb:8f:57"
             ],
             "memory": "1024",
-            "pm_addr": "mgmt-f19-h17-000-r620.rdu2.scalelab.redhat.com",
+            "pm_addr": "mgmt-f19-h01-000-r620.rdu2.scalelab.redhat.com",
             "pm_password": "499317",
             "pm_type": "pxe_ipmitool",
             "pm_user": "quads"
@@ -31,10 +31,10 @@
             "cpu": "2",
             "disk": "20",
             "mac": [
-                "0c:c4:7a:eb:8d:5b"
+                "0c:c4:7a:eb:8b:07"
             ],
             "memory": "1024",
-            "pm_addr": "mgmt-f19-h19-000-r620.rdu2.scalelab.redhat.com",
+            "pm_addr": "mgmt-f19-h02-000-r620.rdu2.scalelab.redhat.com",
             "pm_password": "499317",
             "pm_type": "pxe_ipmitool",
             "pm_user": "quads"
