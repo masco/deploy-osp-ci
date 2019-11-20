@@ -1,0 +1,6 @@
+---
+- hosts: localhost
+  tasks:
+    - name: print user dir
+      debug:
+        var=ansible_user_dir

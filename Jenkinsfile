@@ -32,13 +32,14 @@ node {
 		sh 'echo "registry_mirror: ${registry_mirror}" >> all.yml'
 		sh 'echo "registry_namespace: ${registry_namespace}" >> all.yml'
 		sh 'echo "insecure_registries: ${insecure_registries}" >> all.yml'
+		sh 'cat all.yml'
 	    }
         }
-	dir('ansible_user_dir') {
-	    sh 'printf "ansible_user_dir: $(pwd)\n" >> jetpack/group_vars/all.yml'
-	    sh 'cat jetpack/group_vars/all.yml'
-	}
 	sh 'cp instackenv.json ansible_user_dir/.'
+	sh 'ansible-playbook -vvv test.yml'
+	sh 'echo $HOME'
+	sh 'cp instackenv.json /var/lib/jenkins/.'
+	sh 'ls -a /var/lib/jenkins/'
 	dir('ansible_user_dir') {
 	    sh 'ls -a'
 	}
