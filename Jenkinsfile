@@ -16,10 +16,11 @@ node {
     stage("check ansible jump host") {
 	sh './ansible_host/verify_ansible_host.sh'
         echo "Jump host is good to go"
+	sh 'ls -a'
     }
 
     stage("set jetpack setup") {
-	sh 'mkdir -p ansible_user_dir'
+	sh 'rm -rf ansible_user_dir'
         dir('ansible_user_dir/jetpack') {
 	    git url: 'https://github.com/redhat-performance/jetpack.git'
 	    dir('group_vars') {
@@ -36,6 +37,10 @@ node {
 	dir('ansible_user_dir') {
 	    sh 'printf "ansible_user_dir: $(pwd)\n" >> jetpack/group_vars/all.yml'
 	    sh 'cat jetpack/group_vars/all.yml'
+	}
+	sh 'cp instackenv.json ansible_user_dir/.'
+	dir('ansible_user_dir') {
+	    sh 'ls -a'
 	}
     }
 }
