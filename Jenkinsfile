@@ -27,9 +27,10 @@ node {
 	    echo "Jump host is good to go"
 	}
 
-	stage("set jetpack setup") {
-	    sshCommand remote: remote, command: 'cd ~ && rm -rf jetpack && mkdir -p jetpack && git clone https://github.com/redhat-performance/jetpack.git'
+	stage("set jetpack setup") {/*
+	    sshCommand remote: remote, command: 'cd ~ && rm -rf jetpack && git clone https://github.com/redhat-performance/jetpack.git'
 	    sshPut remote: remote, from: 'instackenv.json', into: '/root/instackenv.json', override: true
+	    //workaround for ansible 3.8
 	    sshCommand remote: remote, command: 'rm -f ~/jetpack/overcloud.yml && cp ~/overcloud.yml.bk ~/jetpack/overcloud.yml'
 	    sshGet remote: remote, from: '/root/jetpack/group_vars/all.yml', into: 'all.yml', override: true
 	    // populate vars
@@ -44,11 +45,21 @@ node {
 	    // set one controller
 	    sh 'echo "controller_count: 1" >> all.yml'
 	    sh 'echo "compute_count: 1" >> all.yml'
-	    sshPut remote: remote, from: 'all.yml', into: '/root/jetpack/group_vars/all.yml', override: true
+	    sshPut remote: remote, from: 'all.yml', into: '/root/jetpack/group_vars/all.yml', override: true*/
 	}
 
 	stage("run jetpack") {
-	    sshCommand remote: remote, command: 'cd ~/jetpack && ansible-playbook -vvv main.yml 2>&1 | tee log1'
+	    //sshCommand remote: remote, command: 'cd ~/jetpack && ansible-playbook -vvv main.yml 2>&1 | tee log1'
+	    sshGet remote: remote, from: '/root/jetpack/log1', into: 'log1', override: true
+	    sh 'tail -3 log1 > log2'
+	    sh 'cat log2'
+	    sh 'python verifier.py ./log2'
+	    sh '''
+		if [[ $? -ne 0 ]]; then
+		    echo 'Deployment failed, check log file'
+		    exit 1
+		fi
+	    '''
 	}
     }
 
