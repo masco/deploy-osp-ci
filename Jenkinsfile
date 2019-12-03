@@ -7,7 +7,9 @@ properties(
 		 string(defaultValue: 'hwstore.rdu2.scalelab.redhat.com', description: '', name: 'hammer_host'),
 		 string(defaultValue: 'registry-proxy.engineering.redhat.com', description: '', name: 'registry_mirror'),
 		 string(defaultValue: 'rh-osbs', description: '', name: 'registry_namespace'),
-		 string(defaultValue: 'docker-registry.upshift.redhat.com', description: '', name: 'insecure_registries')
+		 string(defaultValue: 'docker-registry.upshift.redhat.com', description: '', name: 'insecure_registries'),
+		 string(defaultValue: '', description: 'PR number to test', name: 'pull_request_no'),
+		 text(defaultValue: '', description: 'Extra ansible vars', name: 'extra_vars')
 		])
 	])
 
@@ -27,11 +29,17 @@ node {
 	    echo "Jump host is good to go"
 	}
 
-	stage("set jetpack setup") {/*
-	    sshCommand remote: remote, command: 'cd ~ && rm -rf jetpack && git clone https://github.com/redhat-performance/jetpack.git'
+	stage("set jetpack setup") {
+	    sh 'rm -rf jetpack'
+	    withEnv(["UNAME=${sh(returnStdout: true, script: 'python get_username.py ${pull_request_no}')}",
+		     "BRANCH=${sh(returnStdout: true, script: 'python get_branch_name.py ${pull_request_no}')}"]) {
+		sh 'git clone https://github.com/redhat-performance/jetpack.git'
+		sh 'cd jetpack && git checkout -b ${UNAME}-${BRANCH} master'
+		sh 'cd jetpack && git pull https://github.com/${UNAME}/jetpack.git ${BRANCH}'
+            }
+	    sshCommand remote: remote, command: 'rm -rf ~/jetpack'
+	    sshPut remote: remote, from: 'jetpack', into: '/root', override:true
 	    sshPut remote: remote, from: 'instackenv.json', into: '/root/instackenv.json', override: true
-	    //workaround for ansible 3.8
-	    sshCommand remote: remote, command: 'rm -f ~/jetpack/overcloud.yml && cp ~/overcloud.yml.bk ~/jetpack/overcloud.yml'
 	    sshGet remote: remote, from: '/root/jetpack/group_vars/all.yml', into: 'all.yml', override: true
 	    // populate vars
 	    sh 'echo "cloud_name: ${cloud_name}" >> all.yml'
@@ -45,21 +53,17 @@ node {
 	    // set one controller
 	    sh 'echo "controller_count: 1" >> all.yml'
 	    sh 'echo "compute_count: 1" >> all.yml'
-	    sshPut remote: remote, from: 'all.yml', into: '/root/jetpack/group_vars/all.yml', override: true*/
+	    sh 'echo "force_reprovision: true" >> all.yml'
+	    sh 'echo "${extra_vars}" >> all.yml'
+	    sshPut remote: remote, from: 'all.yml', into: '/root/jetpack/group_vars/all.yml', override: true
 	}
 
 	stage("run jetpack") {
-	    //sshCommand remote: remote, command: 'cd ~/jetpack && ansible-playbook -vvv main.yml 2>&1 | tee log1'
+	    sshCommand remote: remote, command: 'cd ~/jetpack && ansible-playbook -vvv main.yml 2>&1 | tee log1'
 	    sshGet remote: remote, from: '/root/jetpack/log1', into: 'log1', override: true
 	    sh 'tail -3 log1 > log2'
 	    sh 'cat log2'
 	    sh 'python verifier.py ./log2'
-	    sh '''
-		if [[ $? -ne 0 ]]; then
-		    echo 'Deployment failed, check log file'
-		    exit 1
-		fi
-	    '''
 	}
     }
 
